@@ -20,7 +20,7 @@ source /path/to/store.sh
 ```bash
 store greet "hello world"
 store docs ~/Documents
-store script my_script.sh
+store readme ./README.md
 ```
 
 ### List all stored values
@@ -42,5 +42,5 @@ restore greet
 restore docs
 
 # Use with a command
-restore script vim   # Opens the file in vim
+restore readme vim   # Opens the file in vim
 ```
