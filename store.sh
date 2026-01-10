@@ -44,6 +44,30 @@ function store() {
     echo "Stored '$key' -> '$value'"
 }
 
+# UNSTORE: Remove a stored key
+# Usage: unstore <key>
+function unstore() {
+    if [[ $# -lt 1 ]]; then
+        echo "Usage: unstore <key>"
+        return 1
+    fi
+
+    local key="$1"
+    
+    if [[ -f "$STORE_FILE" ]]; then
+        # Check if key exists first to give feedback
+        if grep -q "^${key}:" "$STORE_FILE"; then
+            awk -F: -v k="$key" '$1 != k' "$STORE_FILE" > "${STORE_FILE}.tmp"
+            mv "${STORE_FILE}.tmp" "$STORE_FILE"
+            echo "Removed '$key'"
+        else
+            echo "Key '$key' not found."
+        fi
+    else
+        echo "Store is empty."
+    fi
+}
+
 # STORED: Lists all keys and values
 # Usage: stored
 function stored() {

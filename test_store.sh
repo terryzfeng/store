@@ -37,6 +37,19 @@ function assert_contains() {
     fi
 }
 
+function assert_not_contains() {
+    local haystack="$1"
+    local needle="$2"
+    local msg="$3"
+    if [[ "$haystack" != *"$needle"* ]]; then
+        echo "✅  PASS: $msg"
+    else
+        echo "❌  FAIL: $msg"
+        echo "  String '$needle' WAS found in output"
+        return 1
+    fi
+}
+
 echo "--- Running Tests ---"
 
 # Test 1: Basic Store and Restore
@@ -57,7 +70,9 @@ out=$(restore greet echo)
 assert_contains "$out" "hi there" "Command executed and printed value"
 
 # Test 4: Command Execution (Multi-word)
+# This is expected to fail with the current code if arguments aren't handled right
 echo "Test 4: Command Execution (Multi-word)"
+# We'll use printf to format it, expecting the value to be the second arg
 out=$(restore greet printf "Value:%s\n")
 assert_contains "$out" "Value:hi there" "Multi-word command executed correctly"
 
@@ -65,6 +80,15 @@ assert_contains "$out" "Value:hi there" "Multi-word command executed correctly"
 echo "Test 5: Stored list"
 out=$(stored)
 assert_contains "$out" "greet" "stored command lists key"
+
+# Test 6: Unstore
+echo "Test 6: Unstore"
+unstore greet
+out=$(stored)
+assert_not_contains "$out" "greet" "Key 'greet' removed from stored list"
+val=$(restore greet)
+assert_contains "$val" "not found" "Restoring removed key says not found"
+
 
 # Cleanup
 rm -f "$TEST_DB"

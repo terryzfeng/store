@@ -28,6 +28,11 @@ store script my_script.sh
 stored
 ```
 
+### Remove a stored value
+```bash
+unstore greet
+```
+
 ### Restore a value
 ```bash
 # Print the value
