@@ -4,6 +4,10 @@ STORE_FILE="${STORE_DB_PATH:-$HOME/.store_db}"
 # For testing, you can export STORE_DB_PATH="store_db_test.txt"
 # export STORE_DB_PATH="store_db_test.txt"
 
+function _clean_regex() {
+    echo "$1" | sed 's/[^a-zA-Z0-9_]//g'
+}
+
 # STORE: Store a key-value pair, with value being a string, directory, or file path
 # Usage: store <key> <value>
 # Example: store greet "hello world"
@@ -17,7 +21,7 @@ function store() {
 
     mkdir -p "$(dirname "$STORE_FILE")"
 
-    local key="$1"
+    local key="$(_clean_regex "$1")"
     shift
     local value="$*"
     
@@ -71,7 +75,11 @@ function unstore() {
 # STORED: Lists all keys and values
 # Usage: stored
 function stored() {
-    column -s ":" -t "$STORE_FILE" 2>/dev/null || echo "Store is empty."
+    if [[ ! -f "$STORE_FILE" ]]; then
+        echo "Store is empty."
+        return
+    fi
+    sed "s/:/$(printf '\t')/" "$STORE_FILE" | column -s "$(printf '\t')" -t
 }
 
 # RESTORE: Restore a value by key, list available keys if no arguments, run command with value if command is provided
