@@ -7,21 +7,17 @@ SCRIPT_NAME="store.sh"
 SOURCE_FILE="./store.sh"
 TARGET_FILE="$INSTALL_DIR/$SCRIPT_NAME"
 
-# Detect Shell Configuration File
-if [ -n "$ZSH_VERSION" ]; then
+# Detect user's login shell
+USER_SHELL=$(basename "$SHELL")
+
+if [[ "$USER_SHELL" == "zsh" ]]; then
     SHELL_RC="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ]; then
+elif [[ "$USER_SHELL" == "bash" ]]; then
     SHELL_RC="$HOME/.bashrc"
 else
-    # Fallback based on SHELL environment variable
-    if [[ "$SHELL" == */zsh ]]; then
-        SHELL_RC="$HOME/.zshrc"
-    elif [[ "$SHELL" == */bash ]]; then
-        SHELL_RC="$HOME/.bashrc"
-    else
-        # Default to .bashrc if unknown
-        SHELL_RC="$HOME/.bashrc"
-    fi
+    echo "Detected shell: $USER_SHELL"
+    echo "Defaulting to .bashrc"
+    SHELL_RC="$HOME/.bashrc"
 fi
 
 echo "Installing store..."
