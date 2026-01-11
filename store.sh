@@ -115,7 +115,7 @@ function restore() {
     # If command provided, execute it with value
     if [[ ${#command[@]} -gt 0 ]]; then
         # print command with value
-        echo "${command[@]} $value"
+        echo "${command[@]} $value" >&2
         # execute command with value
         "${command[@]}" "$value"
         return
