@@ -8,6 +8,16 @@ TL;DR; A simple, lightweight key-value store for your terminal. Save strings, di
 
 ## Installation
 
+### Automatic (Recommended)
+
+Run the install script to automatically copy `store.sh` to `~/.store/` and update your shell configuration:
+
+```bash
+sh install.sh
+```
+
+### Manual
+
 Source the script in your shell (e.g., `.bashrc` or `.zshrc`):
 
 ```bash
