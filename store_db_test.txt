@@ -1,3 +1,0 @@
-greet:hello world
-dt:~/Desktop
-bashrc:~/.bashrc

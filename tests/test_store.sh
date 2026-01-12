@@ -3,7 +3,7 @@
 # Configuration
 TEST_DB="test_store_db.txt"
 export STORE_DB_PATH="$TEST_DB"
-SCRIPT="./store.sh"
+SCRIPT="../store.sh"
 
 # Setup
 rm -f "$TEST_DB"
@@ -89,20 +89,27 @@ assert_not_contains "$out" "greet" "Key 'greet' removed from stored list"
 val=$(restore greet)
 assert_contains "$val" "not found" "Restoring removed key says not found"
 
-# Test 7: Sanitization
-echo "Test 7: Sanitization"
-store "hi:hi" "colon_val"
-val=$(restore hihi)
-assert_eq "colon_val" "$val" "Key with colon sanitized correctly"
-store " my key " "space_val"
-val=$(restore mykey)
-assert_eq "space_val" "$val" "Key with spaces sanitized correctly"
+# Test 7: Empty Key 
+echo "Test 7: Empty Key"
+val=$(store "" "empty")
+assert_contains "$val" "Invalid key: key cannot be empty" "Empty key rejected successfully"
 
-# Test 8: Column Display (Colons in value)
-echo "Test 8: Column Display (Colons in value)"
+# Test 8: Bad Input Check
+echo "Test 8: Bad Input Check"
+val=$(store "hi:hi" "colon_val")
+assert_contains "$val" "Invalid key: only letters, numbers, '-', and '_' are allowed" "Key with colon rejected correctly"
+val=$(store " my key " "space_val")
+assert_contains "$val" "Invalid key: only letters, numbers, '-', and '_' are allowed" "Key with space rejected correctly"
+val=$(store "\n" "new_line")
+assert_contains "$val" "Invalid key: only letters, numbers, '-', and '_' are allowed" "Key with newline rejected correctly"
+
+
+# Test 9: Column Display (Colons in value)
+echo "Test 9: Column Display (Colons in value)"
 store my_url "https://google.com"
 out=$(stored)
 assert_contains "$out" "https://google.com" "URL preserved in stored output"
+
 
 # Cleanup
 rm -f "$TEST_DB"

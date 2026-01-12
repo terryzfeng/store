@@ -1,11 +1,17 @@
 # For production
 STORE_FILE="${STORE_DB_PATH:-$HOME/.store_db}"
 
-# For testing, you can export STORE_DB_PATH="store_db_test.txt"
-# export STORE_DB_PATH="store_db_test.txt"
+# For local shell testing, you can export a custom STORE_DB_PATH
+# export STORE_DB_PATH="./local_store_db.txt"
 
-function _clean_regex() {
-    echo "$1" | sed 's/[^a-zA-Z0-9_]//g'
+function _key_regex() {
+    [[ $1 =~ ^[a-zA-Z0-9_-]+$ ]] && return 0
+    return 1
+}
+
+function _value_regex() {
+    [[ "$1" != *$'\n'* ]] && return 0
+    return 1
 }
 
 # STORE: Store a key-value pair, with value being a string, directory, or file path
@@ -18,13 +24,30 @@ function store() {
         echo "Usage: store <key> <value>"
         return 1
     fi
-
-    mkdir -p "$(dirname "$STORE_FILE")"
-
-    local key="$(_clean_regex "$1")"
+    
+    local key="$1"
     shift
     local value="$*"
     
+    # Validate key
+    if [[ -z "$key" ]]; then
+        echo "Invalid key: key cannot be empty"
+        return 1
+    fi
+    
+    if ! _key_regex "$key"; then
+        echo "Invalid key: only letters, numbers, '-', and '_' are allowed"
+        return 1
+    fi
+    
+    # Validate value
+    if ! _value_regex "$value"; then
+        echo "Invalid value: newlines are not allowed"
+        return 1
+    fi
+    
+    mkdir -p "$(dirname "$STORE_FILE")"
+
     # Resolve absolute path if value is a directory or file
     if [[ -d "$value" ]]; then
         value="$(cd "$value" && pwd)"
