@@ -129,6 +129,18 @@ val=$(restore greet | cat)
 assert_eq "hi there" "$val" "Piping output works correctly"
 
 
+# Test 13: Arrays and Quotes
+echo "Test 13: Arrays and Quotes"
+store bug "TICKET-123"
+out=$(restore bug printf "%s|%s" "Fixing {}" "end")
+assert_eq "Fixing TICKET-123|end" "$out" "Quotes are respected in template replacement"
+
+# Test 14: Preventing Shell Injection
+echo "Test 14: Preventing Shell Injection"
+store ip "127.0.0.1"
+out=$(restore ip echo "cd {} && ls")
+assert_eq "cd 127.0.0.1 && ls" "$out" "Shell logic operators inside strings are treated literally"
+
 # Cleanup
 rm -f "$TEST_DB"
 echo "--- Tests Complete ---"

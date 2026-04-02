@@ -180,22 +180,30 @@ function restore() {
     # Extract value safely
     local value="${entry#*:}"
 
-    # If command is provided, evaluate it with value
+    # If command is provided, securely evaluate it with the value
     if [[ ${#command[@]} -gt 0 ]]; then
-        local cmd_str="${command[*]}"
-        local escaped_value
-        printf -v escaped_value '%q' "$value"
+        local new_command=()
+        local has_template=false
 
-        if [[ "$cmd_str" == *"{}"* ]]; then
-            # Replace cmd {} ... with value
-            cmd_str="${cmd_str//\{\}/$escaped_value}"
-        else
-            # Append value to command
-            cmd_str="$cmd_str $escaped_value"
+        for arg in "${command[@]}"; do
+            if [[ "$arg" == *"{}"* ]]; then
+                new_command+=("${arg//\{\}/$value}")
+                has_template=true
+            else
+                new_command+=("$arg")
+            fi
+        done
+
+        # If no template was found, append the value at the end
+        if [[ "$has_template" == false ]]; then
+            new_command+=("$value")
         fi
 
-        echo "+ $cmd_str" >&2
-        eval "$cmd_str"
+        # Echo the executed command explicitly for transparency
+        echo "+ ${new_command[*]}" >&2
+        
+        # Execute securely keeping arg boundaries intact
+        "${new_command[@]}"
         return
     fi
 
