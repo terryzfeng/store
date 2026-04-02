@@ -4,7 +4,7 @@ When you live in the terminal as much as I do, sometimes you find yourself typin
 
 With `store`, you can save any string, directory, or file path, and restore it later with ease. Write down all your juicy secrets and then `store secrets ~/Documents/Important/DontOpen/StayAway/MySuperSecretFile.txt` deep and hidden away for safekeeping. When life happens, things get ugly, Emily said what?! to Edward, and now Steven's getting under the press and Evan's money is on the line, simply `restore secrets vim` and write that down, WRITE THAT DOWN!
 
-TL;DR; A simple, lightweight key-value store for your terminal. Save strings, directories, or files and restore them later.
+TL;DR; `store` is a simple, lightweight key-value store for your terminal. Save strings, directories, or file paths under a nickname and quickly access them later.
 
 ## Installation
 
@@ -28,9 +28,17 @@ source /path/to/store.sh
 
 ### Store a value
 ```bash
+# Store a string
 store greet "hello world"
+
+# Store a directory
 store docs ~/Documents
+
+# Store a file
 store readme ./README.md
+
+# Store a url
+store google https://google.com
 ```
 
 ### List all stored values
@@ -45,12 +53,21 @@ unstore greet
 
 ### Restore a value
 ```bash
-# Print the value
+# Print stored value to stdout
 restore greet
 
-# Change directory (if value is a directory)
-restore docs
+# Restore a path and chain with a command
+restore docs cd
+restore readme vim
+restore google open
 
-# Use with a command
-restore readme vim   # Opens the file in vim
+# Pipe output to another command
+restore greet | wc
+
+# Use with templates (replace {} with value)
+restore greet echo "Greeting: {}"
 ```
+
+## Help
+
+Use `-h` or `--help` to see the help message for each command.

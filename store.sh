@@ -14,12 +14,21 @@ function _value_regex() {
     return 1
 }
 
-# STORE: Store a key-value pair, with value being a string, directory, or file path
+# STORE: Store a key-value pair, with value being a string, directory, or file path.
 # Usage: store <key> <value>
-# Example: store greet "hello world"
-# Example: store home ~
-# Example: store file <filepath>
 function store() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: store <key> <value>"
+        echo ""
+        echo "Store a key-value pair, with value being a string, directory, or file path."
+        echo ""
+        echo "Examples:"
+        echo "  store greet \"hello world\""
+        echo "  store docs ~/Documents"
+        echo "  store readme ./README.md"
+        return 0
+    fi
+
     if [[ $# -lt 2 ]]; then
         echo "Usage: store <key> <value>"
         return 1
@@ -71,9 +80,19 @@ function store() {
     echo "Stored '$key' -> '$value'"
 }
 
-# UNSTORE: Remove a stored key
+# UNSTORE: Remove a stored key.
 # Usage: unstore <key>
 function unstore() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: unstore <key>"
+        echo ""
+        echo "Remove a stored key."
+        echo ""
+        echo "Examples:"
+        echo "  unstore greet"
+        return 0
+    fi
+
     if [[ $# -lt 1 ]]; then
         echo "Usage: unstore <key>"
         return 1
@@ -95,21 +114,47 @@ function unstore() {
     fi
 }
 
-# STORED: Lists all keys and values
+# STORED: Lists all keys and values.
 # Usage: stored
 function stored() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: stored"
+        echo ""
+        echo "Lists all keys and values."
+        echo ""
+        echo "Examples:"
+        echo "  stored"
+        return 0
+    fi
+
     if [[ ! -f "$STORE_FILE" ]]; then
         echo "Store is empty."
         return
     fi
+
     sed "s/:/$(printf '\t')/" "$STORE_FILE" | column -s "$(printf '\t')" -t
 }
 
-# RESTORE: Restore a value by key, list available keys if no arguments, run command with value if command is provided
+# RESTORE: Restore a value by key. Print the value by default.
+# If a command is provided, run `command value`.
+# If command contains {}, replace all instances of {} with the value
 # Usage: restore <key> [command]
-# Example: restore greet -> "hello world"
-# Example: restore greet echo -> echo "hello world"
 function restore() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: restore <key> [command]"
+        echo ""
+        echo "Restore a value by key. Print the value by default."
+        echo "If a command is provided, run `command value`."
+        echo "If command contains {}, replace all instances of {} with the value."
+        echo ""
+        echo "Examples:"
+        echo "  restore greet -> \"hello world\""
+        echo "  restore docs cd -> cd ~/Documents"
+        echo "  restore readme vim -> vim README.md"
+        echo "  restore greet echo \"Greeting: {}\" -> Greeting: hello world"
+        return 0
+    fi
+
     local target_key="$1"
 
     # Handle no arguments: Show keys
@@ -135,21 +180,25 @@ function restore() {
     # Extract value safely
     local value="${entry#*:}"
 
-    # If command provided, execute it with value
+    # If command is provided, evaluate it with value
     if [[ ${#command[@]} -gt 0 ]]; then
-        # print command with value
-        echo "${command[@]} $value" >&2
-        # execute command with value
-        "${command[@]}" "$value"
+        local cmd_str="${command[*]}"
+        local escaped_value
+        printf -v escaped_value '%q' "$value"
+
+        if [[ "$cmd_str" == *"{}"* ]]; then
+            # Replace cmd {} ... with value
+            cmd_str="${cmd_str//\{\}/$escaped_value}"
+        else
+            # Append value to command
+            cmd_str="$cmd_str $escaped_value"
+        fi
+
+        echo "+ $cmd_str" >&2
+        eval "$cmd_str"
         return
     fi
 
     # Default action based on type
-    if [[ -d "$value" ]]; then
-        # change directory
-        cd "$value" || return
-    else
-        # print string
-        echo "$value"
-    fi
+    echo "$value"
 }

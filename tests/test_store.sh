@@ -111,6 +111,24 @@ out=$(stored)
 assert_contains "$out" "https://google.com" "URL preserved in stored output"
 
 
+# Test 10: Template Replacement
+echo "Test 10: Template Replacement"
+store greet "hi there"
+out=$(restore greet echo "Greeting: {}")
+assert_contains "$out" "Greeting: hi there" "Template replacement correctly in output"
+
+# Test 11: Multiple Template Replacement
+echo "Test 11: Multiple Template Replacement"
+store greet "hi there"
+out=$(restore greet echo "Greeting: {} {}")
+assert_contains "$out" "Greeting: hi there hi there" "Multiple template replacement correctly in output"
+
+# Test 12: Piping Output
+echo "Test 12: Piping Output"
+val=$(restore greet | cat)
+assert_eq "hi there" "$val" "Piping output works correctly"
+
+
 # Cleanup
 rm -f "$TEST_DB"
 echo "--- Tests Complete ---"
